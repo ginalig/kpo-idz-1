@@ -11,7 +11,7 @@ public class GameService implements IGameService {
     private int player1Score;
     private int player2Score;
     private static int currentRecord;
-
+    private static final String FILE_NAME = "record.txt";
     private final Field field;
     public static GameService configureGame() throws IOException {
         currentRecord = loadRecord();
@@ -38,13 +38,6 @@ public class GameService implements IGameService {
         }
         var gameMode = GameMode.values()[userInput - 1];
         return new GameService(gameMode);
-    }
-    public GameService(IPlayer player1, IPlayer player2) {
-        this.player1 = player1;
-        this.player2 = player2;
-        this.player1Score = 0;
-        this.player2Score = 0;
-        field = new Field();
     }
     public GameService(GameMode gameMode) {
         switch (gameMode) {
@@ -78,7 +71,7 @@ public class GameService implements IGameService {
         }
         printScore();
         System.out.println("Игра окончена");
-        saveRecord(player1Score > player2Score ? player1Score : player2Score);
+        saveRecord(Math.max(player1Score, player2Score));
     }
 
     @Override
@@ -107,7 +100,12 @@ public class GameService implements IGameService {
         System.out.println("СЧЕТ Черные " + player1Score + " : Белые " + player2Score);
     }
     private static int loadRecord() throws IOException {
-        Reader reader = new FileReader("record.txt");
+        File file = new File(FILE_NAME);
+        if (!file.exists()) {
+            file.createNewFile();
+            return 0;
+        }
+        Reader reader = new FileReader(FILE_NAME);
         Scanner scanner = new Scanner(reader);
         int record = scanner.nextInt();
         scanner.close();
@@ -118,7 +116,7 @@ public class GameService implements IGameService {
         if (record > currentRecord) {
             currentRecord = record;
         }
-        Writer writer = new FileWriter("record.txt");
+        Writer writer = new FileWriter(FILE_NAME);
         writer.write(currentRecord + "");
         writer.close();
     }
